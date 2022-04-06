@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="adminPageSQL">
+	 <select id="getUser" resultType="String">
+	 	select count(*) from user_info
+	 </select>
+	 
+	 <select id="getProduct" resultType="String">
+	 	select count(*) from product
+	 </select>
+	 
+	 <select id="getMenProduct" resultType="int">
+	 	select count(*) from product_connect c inner join product_category pc on pc.category_code=c.category_code where pc.category_name like 'men%'
+	 </select>
+	 
+	 <select id="getWomenProduct" resultType="int">
+		select count(*) from product_connect c inner join product_category pc on pc.category_code=c.category_code where pc.category_name like 'women%'	 
+	 </select>
+	 
+	 <select id="getLifeStyleProduct" resultType="int">
+		select count(*) from product_connect c inner join product_category pc on pc.category_code=c.category_code where pc.category_name like 'life%'
+	 </select>
+	 
+	 <select id="getTotalPrice" resultType="String" parameterType="String">
+	 select sum(finaltotalprice) from (select finaltotalprice, TO_CHAR(orderdate, 'yyyy-MM') as MONTHLYDATA from order_info) where monthlydata=#{date}
+	 </select>
+	 
+	 <select id="getSalesDatasets" parameterType="java.util.Map" resultType="String">
+	 <![CDATA[
+	 	SELECT NVL(SUM(a.cnt), 0) cnt
+  FROM ( SELECT TO_CHAR(orderdate, 'YYYY-MM-DD') AS hiredate
+              , COUNT(*) cnt
+           FROM order_info
+          WHERE orderdate BETWEEN TO_DATE(#{startDate}, 'YYYY-MM')
+                             AND TO_DATE(#{endDate}, 'YYYY-MM') 
+          GROUP BY orderdate
+        ) a
+      , ( SELECT TO_DATE(#{startDate},'YYYY-MM') + LEVEL - 1 AS dt
+            FROM dual 
+         CONNECT BY LEVEL <= (TO_DATE(#{tempEndDate},'YYYY-MM-dd') 
+                            - TO_DATE(#{tempStartDate},'YYYY-MM-dd') + 1)
+        ) b
+  WHERE b.dt = a.hiredate(+)
+  GROUP BY TO_CHAR(b.dt, 'YYYY-MM')
+  ORDER BY TO_CHAR(b.dt, 'YYYY-MM')]]>
+	 </select>
+	 <select id="getMonthUser" parameterType="java.util.Map" resultType="String">
+	 <![CDATA[
+	 	SELECT NVL(SUM(a.cnt), 0) cnt
+  FROM ( SELECT TO_CHAR(user_insertdate, 'YYYY-MM-DD') AS hiredate
+              , COUNT(*) cnt
+           FROM user_info
+          WHERE user_insertdate BETWEEN TO_DATE(#{startDate}, 'YYYY-MM')
+                             AND TO_DATE(#{endDate}, 'YYYY-MM') 
+          GROUP BY user_insertdate
+        ) a
+      , ( SELECT TO_DATE(#{startDate},'YYYY-MM') + LEVEL - 1 AS dt
+            FROM dual 
+         CONNECT BY LEVEL <= (TO_DATE(#{tempEndDate},'YYYY-MM-dd') 
+                            - TO_DATE(#{tempStartDate},'YYYY-MM-dd') + 1)
+        ) b
+  WHERE b.dt = a.hiredate(+)
+  GROUP BY TO_CHAR(b.dt, 'YYYY-MM')
+  ORDER BY TO_CHAR(b.dt, 'YYYY-MM')]]>
+	 </select>
+	 <select id="getKakaoUser" resultType="int">
+	 	select count(*) from user_info where user_id like '%@%'
+	 </select>
+	 <select id="getUserInfo" resultType="userpage.bean.User_InfoDTO">
+	 	select * from user_info order by user_insertdate desc
+	 </select>
+	 <select id="getMonthMenProduct" parameterType="java.util.Map" resultType="String">
+	 <![CDATA[
+	 	SELECT NVL(SUM(a.cnt), 0) cnt
+  FROM ( SELECT TO_CHAR(product_date, 'YYYY-MM-DD') AS hiredate
+              , COUNT(*) cnt
+           FROM product p
+           inner join product_connect c
+           on p.product_number=c.product_number
+          WHERE product_date BETWEEN TO_DATE(#{startDate}, 'YYYY-MM')
+                             AND TO_DATE(#{endDate}, 'YYYY-MM') and c.category_code between 1 and 25
+          GROUP BY product_date
+        ) a
+      , ( SELECT TO_DATE(#{startDate},'YYYY-MM') + LEVEL - 1 AS dt
+            FROM dual 
+         CONNECT BY LEVEL <= (TO_DATE(#{tempEndDate},'YYYY-MM-dd') 
+                            - TO_DATE(#{tempStartDate},'YYYY-MM-dd') + 1)
+        ) b
+  WHERE b.dt = a.hiredate(+)
+  GROUP BY TO_CHAR(b.dt, 'YYYY-MM')
+  ORDER BY TO_CHAR(b.dt, 'YYYY-MM')]]>
+	 </select>
+	 <select id="getMonthWomenProduct" parameterType="java.util.Map" resultType="String">
+	<![CDATA[
+	 	SELECT NVL(SUM(a.cnt), 0) cnt
+  FROM ( SELECT TO_CHAR(product_date, 'YYYY-MM-DD') AS hiredate
+              , COUNT(*) cnt
+           FROM product p
+           inner join product_connect c
+           on p.product_number=c.product_number
+          WHERE product_date BETWEEN TO_DATE(#{startDate}, 'YYYY-MM')
+                             AND TO_DATE(#{endDate}, 'YYYY-MM') and c.category_code between 26 and 31
+          GROUP BY product_date
+        ) a
+      , ( SELECT TO_DATE(#{startDate},'YYYY-MM') + LEVEL - 1 AS dt
+            FROM dual 
+         CONNECT BY LEVEL <= (TO_DATE(#{tempEndDate},'YYYY-MM-dd') 
+                            - TO_DATE(#{tempStartDate},'YYYY-MM-dd') + 1)
+        ) b
+  WHERE b.dt = a.hiredate(+)
+  GROUP BY TO_CHAR(b.dt, 'YYYY-MM')
+  ORDER BY TO_CHAR(b.dt, 'YYYY-MM')]]>
+	 </select>
+	 <select id="getMonthLifestyleProduct" parameterType="java.util.Map" resultType="String">
+	 <![CDATA[
+	 	SELECT NVL(SUM(a.cnt), 0) cnt
+  FROM ( SELECT TO_CHAR(product_date, 'YYYY-MM-DD') AS hiredate
+              , COUNT(*) cnt
+           FROM product p
+           inner join product_connect c
+           on p.product_number=c.product_number
+          WHERE product_date BETWEEN TO_DATE(#{startDate}, 'YYYY-MM')
+                             AND TO_DATE(#{endDate}, 'YYYY-MM') and c.category_code between 32 and 38
+          GROUP BY product_date
+        ) a
+      , ( SELECT TO_DATE(#{startDate},'YYYY-MM') + LEVEL - 1 AS dt
+            FROM dual 
+         CONNECT BY LEVEL <= (TO_DATE(#{tempEndDate},'YYYY-MM-dd') 
+                            - TO_DATE(#{tempStartDate},'YYYY-MM-dd') + 1)
+        ) b
+  WHERE b.dt = a.hiredate(+)
+  GROUP BY TO_CHAR(b.dt, 'YYYY-MM')
+  ORDER BY TO_CHAR(b.dt, 'YYYY-MM')]]>
+	 </select>
+	 <select id="getMenTopCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code between 1 and 5 
+	 </select>
+	 <select id="getMenBottomCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code between 6 and 7 
+	 </select>
+	 <select id="getMenBagCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code=8 
+	 </select>
+	 <select id="getMenHeadwearCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code =9 
+	 </select>
+	 <select id="getMenAccessoriesCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code =10 
+	 </select>
+	 <select id="getMenShoesCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code =11 
+	 </select>
+	 <select id="getMenETCCategoryProduct" resultType="String">
+	     select count(*) from product_connect where category_code between 12 and 25 
+	 </select>
+	 <select id="getWomenCategoryProduct" resultType="String">
+	    select count(*) from product_connect where category_code between 26 and 31 group by category_code
+	 </select>
+	 <select id="getLifestyleCategoryProduct" resultType="String">
+  		select count(*) from product_connect where category_code between 32 and 38  
+	 </select>
+	 <select id="getOrderInfo" resultType="userpage.bean.OrderDTO">
+	 	select * from order_info order by orderdate desc
+	 </select>
+	 <update id="changeRank" parameterType="java.util.Map">
+	 	update user_info set rank_num=#{rank_num} where user_id=#{user_id}
+	 </update>
+	 <update id="changeStatus" parameterType="java.util.Map">
+	 	update order_info set status=#{status} where order_id=#{order_id}
+	 </update>
+</mapper>
